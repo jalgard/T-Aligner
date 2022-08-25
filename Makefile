@@ -5,14 +5,14 @@ SHELLDIR = ./shell
 GCC=g++
 
 makebin:
-	if [ -d "./bin" ]; then
-	echo "Existing ./bin dir check.... OK"
-	else
-		mkdir bin
+	if [[ -d "./bin" ]]; \
+	then echo "Existing ./bin dir check.... OK"; \
+	else \
+	mkdir bin; \
 	fi
 
 all:	makebin orfs grna gverify aligner
-	
+
 aligner:
 	$(GCC) $(CFLAGS) $(SHELLDIR)/alignlib.cpp -o $(BINDIR)/alignlib
 	$(GCC) $(CFLAGS) $(SHELLDIR)/mrna2ref.cpp -o $(BINDIR)/mrna2ref
