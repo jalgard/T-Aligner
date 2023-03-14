@@ -95,9 +95,45 @@ static inline map<string, string> setGeneticCode(string geneticCodeId)
 
         // nonsense codon assignments
         geneticCodeTable["->GTG"] = "start";
+        geneticCodeTable["->CTG"] = "start";
+        geneticCodeTable["->ATG"] = "start";
         //geneticCodeTable["->ATT"] = "start";  // *Cyb from Maslov et al., 1994
         geneticCodeTable["<-TAA"] = "stop";
         geneticCodeTable["<-TAG"] = "stop";
+
+    }
+
+    if(geneticCodeId == "T-Aligner-nonstop")
+    {
+
+        // sense codon assignments
+        geneticCodeTable["TTT"]="F";	geneticCodeTable["TCT"]="S";	geneticCodeTable["TAT"]="Y";	geneticCodeTable["TGT"]="C";
+        geneticCodeTable["TTC"]="F";	geneticCodeTable["TCC"]="S";	geneticCodeTable["TAC"]="Y";	geneticCodeTable["TGC"]="C";
+        geneticCodeTable["TTA"]="L";	geneticCodeTable["TCA"]="S";	geneticCodeTable["TAA"]="*";	geneticCodeTable["TGA"]="W";
+        geneticCodeTable["TTG"]="L";	geneticCodeTable["TCG"]="S";	geneticCodeTable["TAG"]="E";	geneticCodeTable["TGG"]="W";
+        geneticCodeTable["CTT"]="L";	geneticCodeTable["CCT"]="P";	geneticCodeTable["CAT"]="H";	geneticCodeTable["CGT"]="R";
+        geneticCodeTable["CTC"]="L";	geneticCodeTable["CCC"]="P";	geneticCodeTable["CAC"]="H";	geneticCodeTable["CGC"]="R";
+        geneticCodeTable["CTA"]="L";	geneticCodeTable["CCA"]="P";	geneticCodeTable["CAA"]="Q";	geneticCodeTable["CGA"]="R";
+        geneticCodeTable["CTG"]="L";	geneticCodeTable["CCG"]="P";	geneticCodeTable["CAG"]="Q";	geneticCodeTable["CGG"]="R";
+        geneticCodeTable["ATT"]="I";	geneticCodeTable["ACT"]="T";	geneticCodeTable["AAT"]="N";	geneticCodeTable["AGT"]="S";
+        geneticCodeTable["ATC"]="I";	geneticCodeTable["ACC"]="T";	geneticCodeTable["AAC"]="N";	geneticCodeTable["AGC"]="S";
+        geneticCodeTable["ATA"]="I";	geneticCodeTable["ACA"]="T";	geneticCodeTable["AAA"]="K";	geneticCodeTable["AGA"]="R";
+        geneticCodeTable["ATG"]="M";	geneticCodeTable["ACG"]="T";	geneticCodeTable["AAG"]="K";	geneticCodeTable["AGG"]="R";
+        geneticCodeTable["GTT"]="V";	geneticCodeTable["GCT"]="A";	geneticCodeTable["GAT"]="D";	geneticCodeTable["GGT"]="G";
+        geneticCodeTable["GTC"]="V";	geneticCodeTable["GCC"]="A";	geneticCodeTable["GAC"]="D";	geneticCodeTable["GGC"]="G";
+        geneticCodeTable["GTA"]="V";	geneticCodeTable["GCA"]="A";	geneticCodeTable["GAA"]="E";	geneticCodeTable["GGA"]="G";
+        geneticCodeTable["GTG"]="V";	geneticCodeTable["GCG"]="A";	geneticCodeTable["GAG"]="E";	geneticCodeTable["GGG"]="G";
+
+        // nonsense codon assignments
+        geneticCodeTable["->ATG"] = "start";
+        geneticCodeTable["->ATG"] = "start";
+		geneticCodeTable["->TTG"] = "start";
+        geneticCodeTable["->GTG"] = "start";
+        geneticCodeTable["->CTG"] = "start";
+        geneticCodeTable["->ATA"] = "start";
+        geneticCodeTable["->ATT"] = "start";  // *Cyb from Maslov et al., 1994
+        geneticCodeTable["<-TAA"] = "stop";
+        //geneticCodeTable["<-TAG"] = "stop";
 
     }
 	return geneticCodeTable;

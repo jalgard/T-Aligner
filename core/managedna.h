@@ -42,6 +42,7 @@ inline string ReverseAndComplementDNA(const string& DNA)
 
 inline bool DoReadSequenceSanityCheck(const string& Read)
 {
+
     for(int i = 0; i < Read.size(); i++)
     {
         char letter = Read[i];

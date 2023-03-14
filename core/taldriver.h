@@ -9,7 +9,7 @@
 
 using namespace std;
 
-vector<TAlignment> AlignDriverSE(vector<string>& readBufferChain, vector<int>& readIdChain, ReadAlignmentTask& preRAT)
+vector<TAlignment> AlignDriverSE(vector<string>& readBufferChain, vector<string>& readIdChain, ReadAlignmentTask& preRAT)
 {
 	vector<TAlignment> Alignments;
 	int minReadLength = TAlignerOptions::Options().getOption("Aligner|MinMappedSegment");
@@ -75,7 +75,7 @@ vector<TAlignment> SingleEndAlignFastqMT(const char* libFile, ReadAlignmentTask&
 	int jobSizeInReads = TAlignerOptions::Options().getOption("T-Aligner|MemoryUsePreset|" + memPreset);
 
 	vector<vector<string> > readsBuffer(nThreads);
-    vector<vector<int> > readIds(nThreads);
+    vector<vector<string> > readIds(nThreads);
 	vector<future<vector<TAlignment> > > alignFutures;
 	const int maximalJobSize = jobSizeInReads * nThreads;
 	int totalJobSizeCounter = 0;
@@ -123,7 +123,7 @@ vector<TAlignment> SingleEndAlignFastqMT(const char* libFile, ReadAlignmentTask&
 
 				int ji = totalJobSizeCounter % nThreads;
 				readsBuffer[ji].push_back(line2);
-                readIds[ji].push_back(totalReadReadCounter);
+                readIds[ji].push_back(split(line1, ' ')[0]);
 				totalJobSizeCounter++;
 				if(totalJobSizeCounter > maximalJobSize)
 				{
@@ -184,7 +184,7 @@ void WriteAlignedReadsTAF(vector<TAlignment>& reads,
 	{
 		ofile << ReferenceHolder[reads[i].ref_Idx][0] << "\t";
         ++readId;
-		ofile << "@" << reads[i].rd_id << "\t";
+		ofile << reads[i].rd_id << "\t";
 		ofile << reads[i].ref_S << "\t";
 		ofile << reads[i].ref_E << "\t";
 		for(int j = 0; j < reads[i].dR.size(); j++)
@@ -208,7 +208,7 @@ void WriteAlignedReadsFastq(vector<TAlignment>& reads,
 	int readId = 0;
 	for(int i = 0; i < reads.size(); i++)
 	{
-		ofile << "@tal" << ++readId << "\n";
+		ofile << reads[i].rd_id << "\n";
 		auto rSeq = Alignment2Seq(reads[i], refTless);
 		int  rSz  = rSeq.size();
 

@@ -142,7 +142,8 @@ if __name__ == '__main__':
     ax.set_yticks((90, 120, 150, 180, 210, 240, 270, 300, 330))
     ax.set_yticklabels(('-12 U', '-9 U', '-6 U', '-3 U', 'ref', '+3 U', '+6 U', '+9 U', '+12 U'))
     plt.yticks(fontsize=36, fontweight='bold')
-
+    plt.ylim(110, 340)
+    
     for y in range(len(compass_matrix)):
         for x in range(len(compass_matrix[0])):
 

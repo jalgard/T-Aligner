@@ -261,6 +261,24 @@ static inline tuple<bool, int, int, string, string> FindLongestOrfComplete(
 		}
 	};
 
+    // for Bnonstop this is the place to check 'stop_codons' size() == 0
+    if(stop_codons.size() == 0)
+    {
+        l_frame = 0;
+        l_start = 0;
+        l_end = frames[0].size()-1;
+        int cds_begin = l_frame + l_start * 3;
+        int cds_end   = 3 * (l_end - l_start + 1);
+        return make_tuple(
+            true,                                                               //0
+            cds_begin,                                                              //1
+            cds_end,                                                                //2
+            // CDS is reported from START to STOP inclusive                         //3
+            alignedSeq.substr(cds_begin, cds_end),                                  //4
+            // peptide is reported as is ('*' truncated)                            //5
+            frames[0]
+        );
+    }
 	for(c_frame = 0; c_frame < 3; c_frame++)
 	{
 		for(size_t i = 0; i < frames[c_frame].size(); i++)
@@ -293,7 +311,6 @@ static inline tuple<bool, int, int, string, string> FindLongestOrfComplete(
                     updateLongestOrf();
                 }
 			}
-
 		}
 	}
 
@@ -410,7 +427,7 @@ overlapgraph BuildOverlapGraph(vector<TAlignment>& alignments)
     }
 
     // deduplication is not done yet, so lets do it now
-    if(construction_mode == "extension" || construction_mode == "editing")
+    if(construction_mode == "extension" || construction_mode == "editing" || construction_mode == "overlap")
     {
         auto alignments_dedup = FilterMappingDuplicatesReads(alignments);
         alignments = alignments_dedup; alignments_dedup.clear();
@@ -472,10 +489,11 @@ overlapgraph BuildOverlapGraph(vector<TAlignment>& alignments)
 }
 
 
-void Trace(int I, int N, vector<int> P, overlapgraph& OG,
-    vector<vector<int> >& R, const string& mode, const int& sd)
+void Trace(int I, int N, vector<int> P, vector<string> PE, overlapgraph& OG,
+    vector<TAlignment>& AL, vector<vector<int> >& R, const string& mode, const int& sd)
 {
 	P[N] = I;
+    PE.push_back(AL[I].rd_id);
 	N++;
     bool traced = false;
 	if(OG[I].size() == 0)
@@ -489,17 +507,25 @@ void Trace(int I, int N, vector<int> P, overlapgraph& OG,
 	}
 	else
 	{
-		vector<vector<int> > candidates;
+		vector<tuple<int, int, bool> > candidates;
 		for(auto& neighbour : OG[I])
 		{
-            candidates.push_back({neighbour.second, neighbour.first});
+            bool is_pe_condidate = false;
+            if(find(PE.begin(), PE.end(), AL[neighbour.first].rd_id) != PE.end())
+            {
+                is_pe_condidate = true;
+            }
+            candidates.push_back({neighbour.second, neighbour.first, is_pe_condidate});
 		}
 
         if(candidates.size() > 0)
         {
-            sort(candidates.begin(), candidates.end(),
-            [](const vector<int>& a, const vector<int>& b) {  return a[0] > b[0]; } );
 
+            sort(candidates.begin(), candidates.end(),
+            [](const tuple<int, int, bool>& a, const tuple<int, int, bool>& b) {  return get<0>(a) > get<0>(b); } );
+            sort(candidates.begin(), candidates.end(),
+            [](const tuple<int, int, bool>& a, const tuple<int, int, bool>& b) {  return get<2>(a) > get<2>(b); } );
+            
             int depth = sd;
             if(sd < 0)
                 //depth = 1 + int(0.22 * N);
@@ -508,7 +534,7 @@ void Trace(int I, int N, vector<int> P, overlapgraph& OG,
             for(int tr_att = 0; tr_att < depth && tr_att < candidates.size(); tr_att++)
             {
                 traced=true;
-                Trace(candidates[tr_att][1], N, P, OG, R, mode, sd);
+                Trace(get<1>(candidates[tr_att]), N, P, PE, OG, AL, R, mode, sd);
             }
         }
         else if(!traced && N > 1)
@@ -528,13 +554,14 @@ void Trace(int I, int N, vector<int> P, overlapgraph& OG,
     parameters 'overlap min' and 'preferred mode' and pass
     them to Trace() engine function
 */
-void TraceORF(int I, overlapgraph& OG, vector<vector<int> >& R)
+void TraceORF(int I, overlapgraph& OG, vector<TAlignment>& AL, vector<vector<int> >& R)
 {
 	vector<int> P(75, 0);
+    vector<string> PE;
 	int N = 0;
 	static string preferredMode = TAlignerOptions::Options().getOption("ORFinder|PreferredMode");
 	static int searchDepth      = TAlignerOptions::Options().getOption("ORFinder|Tracing|SearchDepth");
-	Trace(I, N, P, OG, R, preferredMode, searchDepth);
+	Trace(I, N, P, PE, OG, AL, R, preferredMode, searchDepth);
 }
 
 // returns a tuple (mRNA sequence, peptide sequence, TAlignment object)
@@ -565,7 +592,7 @@ vector<tuple<string, string, TAlignment> > TraceVector(vector<int>& rids, overla
     vector<vector<int> > R;
     for(int i = 0; i < rids.size(); i++)
     {
-        TraceORF(rids[i], og, R);
+        TraceORF(rids[i], og, Alignments, R);
     }
 
     vector<tuple<string, string, TAlignment> > orfs_vector;

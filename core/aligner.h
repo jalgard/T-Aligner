@@ -45,7 +45,7 @@ struct TAlignment
 
     int mmcount;
     int ref_ESD;
-    int rd_id;
+    string rd_id;
     unsigned int flags;
 
     TAlignment() : ref_Idx(-1), flags(0) {}
@@ -113,7 +113,7 @@ public:
     unordered_map<string, vector<Rindex> >* refIndex;
     vector<TlessDNA>* refTless;
     TlessDNA read;
-    int rd_id;
+    string rd_id;
 };
 
 TAlignment TAlignRead(ReadAlignmentTask& T)

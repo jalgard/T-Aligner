@@ -90,7 +90,7 @@ private:
         { "T-Aligner|Version", "4.0.5f" },
         { "T-Aligner|Threads", "-1" },
         { "T-Aligner|Reads/job", "Hi" },
-        { "T-Aligner|MemoryUsePreset|Hi", "600000" },
+        { "T-Aligner|MemoryUsePreset|Hi", "1600000" },
         { "T-Aligner|MemoryUsePreset|Mid", "300000" },
         { "T-Aligner|MemoryUsePreset|Low", "10000" },
 
@@ -102,7 +102,7 @@ private:
 
         { "Aligner|Seed", "10" },
         { "Aligner|Mismatch", "1" },
-        { "Aligner|MinMappedSegment", "10" },
+        { "Aligner|MinMappedSegment", "15" },
         { "Aligner|MinMapped%", "75" },
 
         { "ORFinder|OverlapMin", "10" },
@@ -255,6 +255,11 @@ string ParseFromCommandLine(int argc, char** argv)
         else if(ckey == "--aln_min_mapped_percent")
         {
             TOP.setOption("Aligner|MinMapped%", string(argv[++oId]));
+        }
+
+        else if(ckey == "--aln_seed")
+        {
+            TOP.setOption("Aligner|Seed", string(argv[++oId]));
         }
 
 

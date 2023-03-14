@@ -36,6 +36,14 @@ def GetOptParser():
         action='store',
         help="Type of the graph: bars, dots, prod")
 
+    optionParser.add_argument('--m', '--mrna',
+        action='store',
+        help="Canonical assembled ORF in TAF v.2 format")
+
+    optionParser.add_argument('--c', '--cover',
+        action='store',
+        help="Set minimal visible coverage threshold")
+
 
     return optionParser
 
@@ -88,6 +96,10 @@ if __name__ == '__main__':
     for i in referenceSequence.lstrip().rstrip().upper():
         if i != 'T':
             ref_tless_length += 1
+
+    dotCoverageCutoff = 4
+    if runArgs.c is not None:
+        dotCoverageCutoff = int(runArgs.c)
 
     # fill matrices with zero values
     es_read_matrix = []
@@ -172,7 +184,7 @@ if __name__ == '__main__':
             for x in range(len(es_read_matrix[0][l_from:l_to])):
                 xi.append(10.0 * x)
                 yi.append(410 - 10.0 * y)
-                if y != 20 and es_read_matrix[y][x] > 20:
+                if y != 20 and es_read_matrix[y][x] > dotCoverageCutoff:
                     zi.append(es_read_matrix[y][x])
                 else:
                     zi.append(0)
@@ -195,12 +207,24 @@ if __name__ == '__main__':
         #ax.set_ylabel('Editing state',fontsize=25, fontweight='bold')
         ax.set_yticks((90, 120, 150, 180, 210, 240, 270, 300, 330))
         ax.set_yticklabels(('-12 U', '-9 U', '-6 U', '-3 U', 'ref', '+3 U', '+6 U', '+9 U', '+12 U'))
+        ax.tick_params(labelright=True)
         plt.yticks(fontsize=36, fontweight='bold')
+        plt.ylim(110, 340)
 
         ax1 = inset_axes(ax, width="15%",  height="3%", loc='lower right')
         cbar = plt.colorbar(scatter_tal, cax=ax1, orientation="horizontal")
         ax1.xaxis.set_ticks_position("top")
         ax1.xaxis.set_tick_params(width=5)
+
+        if runArgs.m is not None:
+            with open(runArgs.m, 'r') as taf:
+                mrna_data = taf.readlines()[0].rstrip().split('\t')
+                s = int(mrna_data[2])
+                es = [int(x) for x in mrna_data[4][:-1].split(';')[1:-1]]
+                orf_x_data = [10.0 * s + 10.0 * x for x in range(len(es))]
+                orf_y_data = [410.0 - 10.0 * (20-x) for x in es]
+                ax.plot(orf_x_data, orf_y_data, color='r')
+
 
     if graph_type == 'bars':
 
@@ -237,4 +261,4 @@ if __name__ == '__main__':
     output_pic = 'output.pdf'
     if runArgs.o is not None:
         output_pic = str(runArgs.o)
-    plt.savefig(output_pic)
+    plt.savefig(output_pic, dpi=100)
